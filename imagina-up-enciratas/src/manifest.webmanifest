@@ -1,0 +1,17 @@
+{
+  "name": "gastabot — compras con presupuesto",
+  "short_name": "gastabot",
+  "description": "Dime cuánto traes y qué se te antoja; te armo el combo en tu plaza.",
+  "start_url": "sidepanel.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F6F7F5",
+  "theme_color": "#167A5B",
+  "lang": "es-MX",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

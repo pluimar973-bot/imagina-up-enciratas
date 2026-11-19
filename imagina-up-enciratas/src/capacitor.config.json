@@ -1,0 +1,7 @@
+{
+  "appId": "mx.gastabot.ags",
+  "appName": "GastaBot AGS",
+  "webDir": "www",
+  "android": { "allowMixedContent": false },
+  "server": { "androidScheme": "https" }
+}

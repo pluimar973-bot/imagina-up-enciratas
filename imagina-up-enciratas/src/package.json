@@ -1,0 +1,15 @@
+{
+  "name": "gastabot-ags",
+  "version": "2.5.1",
+  "private": true,
+  "description": "GastaBot AGS: compras por presupuesto en plazas de Aguascalientes",
+  "scripts": {
+    "build:www": "node scripts/build-www.js",
+    "android:add": "npx cap add android && npx cap sync android"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/cli": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  }
+}

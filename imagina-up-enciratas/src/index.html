@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#167A5B" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="gastabot" />
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/icon-32.png" />
+  <link rel="apple-touch-icon" href="icons/icon-192.png" />
+  <title>gastabot</title>
+  <link rel="stylesheet" href="sidepanel.css" />
+</head>
+<body>
+  <header class="top">
+    <button class="brand" data-act="drawer" aria-label="Abrir el menú de gastabot"><span data-icon="menu"></span>gastabot</button>
+    <label class="plaza" title="Plaza">
+      <select id="plazaSel" aria-label="Plaza"></select>
+      <span class="chev" data-icon="chevron"></span>
+    </label>
+    <span class="spacer"></span>
+    <button class="icon bell" data-act="page" data-page="notifs" aria-label="Notificaciones"><span data-icon="bell"></span><span id="bellBadge" class="badge" hidden></span></button>
+    <button class="icon" data-act="page" data-page="community" aria-label="Comunidad" data-icon="users"></button>
+    <button class="icon" data-act="new-chat" aria-label="Nuevo chat" data-icon="plus"></button>
+  </header>
+
+  <div id="budgetBar" class="budget-bar" hidden></div>
+
+  <main id="main">
+    <section id="hero" class="hero">
+      <h1 id="greet">Hola</h1>
+      <p class="lead">¿Cuánto traes y qué se te antoja?</p>
+      <label class="money" for="budgetIn"><span class="cur">$</span><input id="budgetIn" inputmode="numeric" autocomplete="off" placeholder="1,500" aria-label="Presupuesto en pesos" /></label>
+      <div id="heroComposer"></div>
+      <div class="chips" id="quick"></div>
+      <div class="chips" id="catChips" role="group" aria-label="Categorías"></div>
+      <button id="goBtn" class="primary" data-act="go" disabled>Armar combo</button>
+      <p id="goHint" class="hint">Pon un monto y elige al menos una categoría.</p>
+      <button class="community-card" data-act="page" data-page="community"><span data-icon="users"></span><span><b>Comunidad</b><small>Ofertas, lugares e ideas que recomienda la gente</small></span></button>
+      <button class="community-card" data-act="page" data-page="delivery"><span data-icon="bag"></span><span><b>A domicilio</b><small>Busca en Rappi o DiDi Food lo que se te antoje</small></span></button>
+      <button class="community-card" data-act="page" data-page="localfood"><span data-icon="comida"></span><span><b>Comida local</b><small>Taquerías, fondas y antojitos baratos, con fotos y precios</small></span></button>
+      <button class="community-card" data-act="page" data-page="near"><span data-icon="pin"></span><span><b>Cerca de mí</b><small>Plazas por distancia, cómo llegar y combos donde estás</small></span></button>
+      <button class="community-card" data-act="page" data-page="prices"><span data-icon="tag"></span><span><b>Precios locales</b><small>Madera, abarrotes, materiales y servicios: lo que la gente vio</small></span></button>
+      <div class="info" aria-label="Qué puedes hacer">
+        <section><h2><span data-icon="send"></span>Ejemplos</h2>
+          <button data-act="example" data-q="$800 en Altaria, una sudadera negra">"$800 en Altaria, una sudadera negra"</button>
+          <button data-act="example" data-q="Tengo $2,400: ropa, perfume y comida">"Tengo $2,400: ropa, perfume y comida"</button>
+          <button data-act="example" data-q="menú de Chili's">"Menú de Chili's"</button>
+        </section>
+        <section><h2><span data-icon="check"></span>Qué hago</h2>
+          <p>Recuerda tu presupuesto durante la conversación.</p>
+          <p>Te muestra 5 opciones distintas por categoría, con precio.</p>
+          <p>Te deja cambiar cualquier opción y ver el menú de cada tienda.</p>
+        </section>
+        <section><h2><span data-icon="help"></span>Límites</h2>
+          <p>Un «~» en el precio significa que es estimado.</p>
+          <p>No compro por ti ni veo inventario en tiempo real.</p>
+          <p>Por ahora sólo plazas de Aguascalientes.</p>
+        </section>
+      </div>
+    </section>
+    <div id="thread" aria-live="polite"></div>
+  </main>
+
+  <form id="composer" class="composer" autocomplete="off">
+    <input id="chatInput" placeholder="O escríbelo: $800 en Altaria, una sudadera" aria-label="Mensaje" />
+    <button class="send" type="submit" aria-label="Enviar" data-icon="send"></button>
+  </form>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- Bienvenida / inicio de sesión -->
+  <section id="welcome" class="overlay welcome" hidden>
+    <span class="brand big">gastabot</span>
+    <h2>Entra para guardar tus chats y favoritos</h2>
+    <p id="welcomeNote" class="muted"></p>
+    <form id="authForm" class="stack">
+      <label>Nombre<input name="name" autocomplete="name" /></label>
+      <label>Correo<input name="email" type="email" required autocomplete="email" /></label>
+      <label id="pwRow">Contraseña<input name="password" type="password" minlength="6" autocomplete="current-password" /></label>
+      <button class="primary" type="submit" data-mode="signin" id="authPrimary">Entrar</button>
+      <button class="ghost" type="submit" data-mode="signup" id="authSecondary">Crear cuenta</button>
+    </form>
+    <button class="text" data-act="skip-login">Seguir sin cuenta</button>
+    <p id="authMsg" class="msg-line" role="alert"></p>
+  </section>
+
+  <!-- Páginas -->
+  <div id="scrim" class="scrim" data-act="drawer-close" hidden></div>
+  <aside id="drawer" class="drawer" aria-label="Menú" hidden>
+    <button class="d-new" data-act="new-chat"><span data-icon="plus"></span>Nuevo chat</button>
+    <div class="d-title">Chats recientes</div>
+    <nav id="drawerChats" class="d-chats" aria-label="Chats recientes"></nav>
+    <nav class="d-links">
+      <button data-act="home"><span data-icon="hogar"></span>Inicio</button>
+      <button data-act="page" data-page="community"><span data-icon="users"></span>Comunidad</button>
+      <button data-act="page" data-page="delivery"><span data-icon="bag"></span>A domicilio (Rappi, DiDi)</button>
+      <button data-act="page" data-page="prices"><span data-icon="tag"></span>Precios locales</button>
+      <button data-act="page" data-page="menus"><span data-icon="comida"></span>Menús de la plaza</button>
+      <button data-act="page" data-page="offers"><span data-icon="tag"></span>Ofertas</button>
+      <button data-act="page" data-page="favs"><span data-icon="star"></span>Favoritos</button>
+      <button data-act="page" data-page="add"><span data-icon="plus"></span>Agregar producto o tienda</button>
+      <button data-act="page" data-page="history"><span data-icon="clock"></span>Historial completo</button>
+      <button data-act="page" data-page="account"><span data-icon="user"></span>Cuenta</button>
+      <button data-act="page" data-page="settings"><span data-icon="gear"></span>Ajustes</button>
+      <button data-act="page" data-page="help"><span data-icon="help"></span>Cómo se usa</button>
+      <button data-act="page" data-page="credits"><span data-icon="link"></span>Créditos de fotos</button>
+      <button id="installBtn" hidden><span data-icon="download"></span>Instalar en mi celular</button>
+    </nav>
+  </aside>
+
+  <section class="overlay page" id="page-notifs" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Notificaciones</h2><span class="spacer"></span><button class="text" data-act="notif-readall">Marcar leídas</button></div>
+    <div id="notifList"></div>
+    <form id="notifPrefs" class="stack" style="margin:12px 16px"><h3>Avisarme de</h3>
+      <label class="chk"><input type="checkbox" name="fav_offers"> Ofertas nuevas de mis tiendas ⭐</label>
+      <label class="chk"><input type="checkbox" name="expiring"> Ofertas por vencer</label>
+      <label class="chk"><input type="checkbox" name="likes"> Actividad en mis publicaciones</label>
+      <label class="chk"><input type="checkbox" name="community"> Novedades de la comunidad en mi plaza</label>
+      <p class="muted sm">Los avisos se revisan al abrir la app y cada pocos minutos mientras está abierta. No llegan con la app cerrada.</p></form>
+  </section>
+
+  <section class="overlay page" id="page-localfood" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Comida local</h2></div>
+    <p class="muted" style="padding:0 16px">Restaurantes y negocios de comida de Aguascalientes, baratos y variados. Los lugares con nombre salen de fuentes públicas; los <b>precios son estimados míos</b>, no su menú. Confirma en el lugar.</p>
+    <div class="chips seg-chips" id="lfChips"></div>
+    <div id="lfList"></div>
+  </section>
+
+  <section class="overlay page" id="page-near" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Cerca de mí</h2></div>
+    <p class="muted" style="padding:0 16px">Te ordeno las plazas de la más cercana a la más lejana. Tu ubicación se queda en esta pestaña: no se guarda ni se manda a ningún servidor. La distancia es en línea recta, no por calles.</p>
+    <div class="stack" style="margin:8px 16px">
+      <button class="primary" type="button" data-act="near-locate">Usar mi ubicación</button>
+      <label>O elige dónde estás<select id="nearPick" aria-label="Elegir plaza donde estás"></select></label>
+      <p class="msg-line" id="nearMsg" role="status"></p>
+    </div>
+    <div id="nearList"></div>
+  </section>
+
+  <section class="overlay page" id="page-delivery" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>A domicilio</h2></div>
+    <p class="muted" style="padding:0 16px">GastaBot no está conectado a Rappi ni a DiDi Food: estos botones abren sus sitios o apps. Menú, precios, promociones y disponibilidad los decide cada plataforma, y pueden ser distintos a los de la tienda.</p>
+    <form id="delivForm" class="stack" style="margin:8px 16px">
+      <h3>Buscar en Rappi</h3>
+      <label>¿Qué se te antoja?<input name="q" maxlength="60" required placeholder="pizza, tacos, café, súper…" /></label>
+      <button class="primary" type="submit">Buscar en Rappi</button>
+    </form>
+    <div class="chips" id="delivChips" style="padding:0 16px 8px"></div>
+    <div style="margin:8px 16px 0;padding:14px;border:1px solid var(--line);border-radius:14px">
+      <h3 style="margin:0 0 4px">DiDi Food</h3>
+      <p class="muted sm" style="margin:0 0 8px">DiDi no tiene buscador web para clientes: para pedir se usa su app. Aquí está su página de Aguascalientes.</p>
+      <a class="chip" id="didiLink" target="_blank" rel="noopener noreferrer">Abrir DiDi Food Aguascalientes</a>
+    </div>
+    <p class="muted sm" style="margin:12px 16px">Rappi y DiDi son marcas de sus respectivos dueños; GastaBot no tiene relación con ellas.</p>
+  </section>
+
+  <section class="overlay page" id="page-prices" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Precios locales</h2></div>
+    <p id="prNote" class="muted" style="padding:0 16px"></p>
+    <form id="prSearch" class="stack" style="margin:0 16px 8px"><input id="prQ" type="search" placeholder="Buscar: pino, huevo, triplay, tapicería…" aria-label="Buscar precio" /></form>
+    <div class="chips" id="prCats" role="group" aria-label="Categoría"></div>
+    <div id="prList"></div>
+    <div id="prEst"></div>
+    <section style="margin:16px 16px 0">
+      <h3 style="margin:0 0 4px">Necesito cotización</h3>
+      <p class="muted sm" style="margin:0 0 8px">¿No encuentras el precio? Pídelo y quien lo sepa te responde registrándolo.</p>
+      <details class="stack" style="padding:12px;border:1px solid var(--line);border-radius:14px"><summary><b>Pedir una cotización</b></summary>
+        <form id="reqForm" class="stack" style="margin-top:10px">
+          <label>Categoría<select name="category" id="reqCat"></select></label>
+          <label>¿Qué buscas?<input name="product" maxlength="100" required placeholder="10 tablones de pino 1x12, 3 m" /></label>
+          <label>Zona (opcional)<input name="zone" maxlength="60" placeholder="Norte, Centro…" /></label>
+          <label>Nota (opcional)<input name="note" maxlength="200" /></label>
+          <button class="primary" type="submit">Pedir cotización</button><p id="reqMsg" class="msg-line" role="status"></p>
+        </form></details>
+      <div id="reqList"></div>
+    </section>
+    <div id="prRefs" style="margin:16px"></div>
+    <details id="prAdd" class="stack" style="margin:12px 16px;padding:14px;border:1px solid var(--line);border-radius:14px">
+      <summary><b>Registrar un precio</b></summary>
+      <form id="prForm" class="stack" style="margin-top:10px">
+        <label>Categoría<select name="category" id="prCat"></select></label>
+        <label>Producto o servicio<input name="product" maxlength="80" required placeholder="Tablón de pino 1x12" /></label>
+        <div class="row2"><label>Unidad<input name="unit" id="prUnit" maxlength="30" required list="prUnits" placeholder="pie, kg, pieza…" /></label>
+        <label>Precio (MXN)<input name="price" type="number" min="0.01" max="1000000" step="0.01" required inputmode="decimal" /></label></div>
+        <datalist id="prUnits"></datalist>
+        <label>Negocio o lugar<input name="place" maxlength="60" required placeholder="Maderería El Pino" /></label>
+        <label>Zona o colonia (opcional)<input name="zone" maxlength="60" placeholder="Centro, Av. Aguascalientes…" /></label>
+        <label>¿Cuándo lo viste?<input name="seen_on" type="date" required /></label>
+        <label>Nota (opcional)<input name="note" maxlength="200" placeholder="Precio por mayoreo, incluye corte…" /></label>
+        <button class="primary" type="submit">Guardar precio</button>
+      </form>
+      <div id="prScanBox" style="margin-top:12px">
+        <label>O sube la foto de una lista de precios<input id="prPhoto" type="file" accept="image/*" /></label>
+        <p id="prScanMsg" class="msg-line" role="status"></p>
+        <form id="prBatch" class="stack" hidden></form>
+      </div>
+      <p id="prMsg" class="msg-line" role="status"></p>
+    </details>
+  </section>
+
+  <section class="overlay page" id="page-community" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Comunidad</h2></div>
+    <p id="comNote" class="muted" style="padding:0 16px"></p>
+    <div class="chips" id="comKinds" role="group" aria-label="Tipo de publicación"></div>
+    <div class="chips" id="comSort" role="group" aria-label="Orden"></div>
+    <form id="comForm" class="stack">
+      <h3>Comparte algo</h3>
+      <label>Tipo<select name="kind"><option value="oferta">Oferta que vi</option><option value="lugar">Lugar recomendado</option><option value="idea">Idea o consejo</option></select></label>
+      <label id="comScanRow">Foto de la oferta (opcional)<input id="comPhoto" type="file" accept="image/*" /></label>
+      <p id="comScanMsg" class="msg-line" role="status"></p>
+      <label>Título<input name="title" maxlength="80" required placeholder="2x1 en playeras en Zara" /></label>
+      <label>Detalle<textarea name="body" maxlength="400" rows="3" placeholder="Qué viste, dónde y hasta cuándo (opcional)"></textarea></label>
+      <label>Tienda o lugar (opcional)<input name="store" maxlength="60" list="comStores" placeholder="Zara, Altaria…" /></label>
+      <datalist id="comStores"></datalist>
+      <label id="comUntilRow">Vigente hasta (obligatorio en ofertas)<input name="valid_until" type="date" /></label>
+      <button class="primary" type="submit">Publicar</button>
+      <p id="comMsg" class="msg-line" role="status"></p>
+    </form>
+    <div id="comList"></div>
+  </section>
+
+  <section class="overlay page" id="page-credits" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Créditos de fotos</h2></div>
+    <p class="muted" style="padding:0 16px">Las fotos de producto vienen de Wikimedia Commons (licencias libres: dominio público, CC BY o CC BY-SA). Son imágenes de referencia del tipo de producto, no de la tienda.</p>
+    <ul id="creditList" class="credits"></ul>
+  </section>
+
+  <section class="overlay page" id="page-menus" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Menús de la plaza</h2></div>
+    <div id="menusBody" class="store-cards"></div>
+  </section>
+
+  <section class="overlay page" id="page-store" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Menú</h2></div>
+    <div id="storeBody"></div>
+  </section>
+
+  <section class="overlay page" id="page-history" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Historial</h2></div>
+    <button class="primary slim" data-act="new-chat">Nuevo chat</button>
+    <div id="chatList"></div>
+    <p id="historyNote" class="muted"></p>
+  </section>
+
+  <section class="overlay page" id="page-offers" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Ofertas vigentes</h2></div>
+    <div id="offerList"></div>
+    <h3 style="margin:16px 16px 0">De la comunidad <span class="btag k-lugar">No verificadas</span></h3>
+    <div id="offerCom"></div>
+    <form id="offerForm" class="stack" hidden>
+      <h3>Publicar oferta</h3>
+      <label>Tienda<select name="storeId" id="offerStore"></select></label>
+      <label>Oferta<input name="text" placeholder="50% en perfumes" required /></label>
+      <label>Vigente hasta<input name="valid_until" type="date" required /></label>
+      <button class="primary" type="submit">Publicar oferta</button>
+    </form>
+    <p id="offerMsg" class="msg-line"></p>
+  </section>
+
+  <section class="overlay page" id="page-favs" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Favoritos</h2></div>
+    <div id="favList"></div>
+  </section>
+
+  <section class="overlay page" id="page-add" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Agregar</h2></div>
+    <div class="seg" role="tablist"><button class="on" data-act="seg" data-seg="prod">Producto por link</button><button data-act="seg" data-seg="store">Tienda</button></div>
+
+    <form id="prodForm" class="stack">
+      <p class="muted">Pega el link de un producto y traigo su imagen y precio real, si la página los publica. Si no, escríbelos tú.</p>
+      <label>Link del producto<span class="inline"><input name="url" type="url" placeholder="https://…" /><button type="button" class="ghost" data-act="fetch-link">Traer datos</button></span></label>
+      <div id="linkPreview" class="preview" hidden></div>
+      <label>Tienda<select name="storeId" id="prodStore" required></select></label>
+      <label>Categoría<select name="cat" id="prodCat"></select></label>
+      <label>Nombre del producto<input name="name" required placeholder="Sudadera negra básica" /></label>
+      <label>Precio exacto (MXN)<input name="price" type="number" min="1" step="1" required /></label>
+      <label>URL de la imagen (opcional)<input name="img" type="url" /></label>
+      <button class="primary" type="submit">Guardar producto</button>
+    </form>
+
+    <form id="storeForm" class="stack" hidden>
+      <label>Nombre<input name="name" required /></label>
+      <label>Plaza<select name="plaza" id="storePlaza"></select></label>
+      <label>Categorías (separadas por coma: ropa, comida)<input name="cats" required /></label>
+      <div class="two"><label>Gasto mínimo $<input name="min" type="number" min="0" required /></label><label>Gasto máximo $<input name="max" type="number" min="0" required /></label></div>
+      <label>Sitio web (opcional)<input name="site" type="url" /></label>
+      <button class="primary" type="submit">Guardar tienda</button>
+    </form>
+    <p id="addMsg" class="msg-line" role="status"></p>
+  </section>
+
+  <section class="overlay page" id="page-account" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Cuenta</h2></div>
+    <div id="accountBox"></div>
+    <details class="plain"><summary>Mis números</summary><pre id="metrics"></pre></details>
+    <button class="danger" id="resetBtn">Borrar datos de este navegador</button>
+  </section>
+
+  <section class="overlay page" id="page-settings" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Ajustes</h2></div>
+    <form id="setForm" class="stack">
+      <h3>Nube (Supabase)</h3>
+      <label>Project URL<input name="supabaseUrl" placeholder="https://xxxx.supabase.co" /></label>
+      <label>Anon public key<input name="supabaseKey" /></label>
+      <h3>Chat con IA (opcional)</h3>
+      <label class="check"><input type="checkbox" name="llm" value="1" /> Usar IA (Claude) en el chat</label>
+      <p class="muted">Requiere desplegar la función <code>gastabot-chat</code> en tu Supabase (ver supabase/README.md). Si falla, el chat usa sus reglas de siempre.</p>
+      <h3>Fotos de productos (Pexels, gratis)</h3>
+      <p class="sm muted">Sin clave, la app busca fotos libres en Wikimedia Commons (con crédito). Con tu clave gratis de Pexels suelen verse mejor.</p>
+      <label>API key de Pexels<input name="pexelsKey" type="password" placeholder="Pega tu clave" /></label>
+      <p class="muted">Sin clave no se muestran fotos, solo ilustraciones. Pide la clave gratis en pexels.com/api. Solo se aceptan fotos cuya descripción coincide con el tipo de producto.</p>
+      <h3>Google Places (opcional)</h3>
+      <label>API key<input name="placesKey" type="password" /></label>
+      <button class="primary" type="submit">Guardar ajustes</button>
+    </form>
+    <h3>Traer tiendas de la plaza elegida arriba</h3>
+    <div class="stack">
+      <button class="ghost" id="syncBtn">Sincronizar con Google</button>
+      <button class="ghost" id="osmBtn">Sincronizar con OpenStreetMap (gratis)</button>
+    </div>
+    <p id="setMsg" class="msg-line" role="status"></p>
+  </section>
+
+  <section class="overlay page" id="page-help" hidden>
+    <div class="page-head"><button class="icon" data-act="close" aria-label="Volver" data-icon="back"></button><h2>Cómo se usa</h2></div>
+    <ol class="steps">
+      <li>Elige la plaza arriba.</li>
+      <li>Pon cuánto traes y toca lo que se te antoja. Te armo un combo con cinco opciones distintas por categoría.</li>
+      <li>Toca una compra del combo para cambiarla. La barra muestra cuánto gastas y cuánto te sobra.</li>
+      <li>También puedes escribirlo: «$800 en Altaria, una sudadera negra».</li>
+      <li>Toca el nombre de una tienda para ver su menú completo, con combos y productos sueltos.</li>
+      <li>Tus chats se guardan en Historial.</li>
+    </ol>
+    <p class="muted"><b>En el celular:</b> abre la dirección de gastabot en Chrome (Android) o Safari (iPhone). En Android toca «Instalar en mi celular» en el Menú; en iPhone toca Compartir y luego «Agregar a pantalla de inicio».</p>
+    <p class="muted">Los precios marcados con «~» son estimaciones por rango. Los que no llevan «~» los capturó alguien desde la página del producto. Confirma siempre en la tienda.</p>
+    <p class="muted">Un ✔ junto a la tienda significa que aparece en fuentes públicas. Un «?» significa que falta confirmarla.</p>
+  </section>
+
+  <div class="scrim sheet-scrim" id="sheetScrim" data-act="sheet-close" hidden></div>
+  <section class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Detalle del producto" tabindex="-1" hidden></section>
+
+  <script src="stores.js"></script>
+  <script src="menus.js"></script>
+  <script src="catalogo.js"></script>
+  <script src="locales.js"></script>
+  <script src="restaurantes.js"></script>
+  <script src="tecnologia.js"></script>
+  <script src="near.js"></script>
+  <script src="visual.js"></script>
+  <script src="icons.js"></script>
+  <script src="art.js"></script>
+  <script src="photos.js"></script>
+  <script src="llm.js"></script>
+  <script src="engine.js"></script>
+  <script src="catalog.js"></script>
+  <script src="places.js"></script>
+  <script src="osm.js"></script>
+  <script src="link.js"></script>
+  <script src="db.js"></script>
+  <script src="sidepanel.js"></script>
+  <script src="pwa.js"></script>
+</body>
+</html>
